@@ -80,13 +80,22 @@ public class MyFormApp extends javax.swing.JFrame {
      public static File[] getFileList(String dirPath) { // ฟังก์ชั่นสำหรับค้นหาไฟล์ pdf ที่อยู่ในโฟล์เดอร์
             File dir = new File(dirPath);   
 
-            File[] fileList = dir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) { //ค้นหารายชื่อไฟล์ทั้งหมดในโฟล์เดอร์
+            File[] fileList;
+        fileList = dir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) { //ค้นหารายชื่อไฟล์ทั้งหมดในโฟล์เดอร์
+                
+                if(name.endsWith(".PDF")){
+                    return name.endsWith(".PDF");
+                }
+                if(name.endsWith(".pdf")){
                     return name.endsWith(".pdf");
                 }
-            });
+                return false;
+            }
+        });
             return fileList;
         }  
+                
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -215,6 +224,9 @@ FileUtils.copyFile(source, dest);
     }// </editor-fold>//GEN-END:initComponents
 
     private void RemovebuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RemovebuttonMouseClicked
+        confirmDelete();
+    }//GEN-LAST:event_RemovebuttonMouseClicked
+    public void confirmDelete(){
         // TODO add your handling code here:JDialog.setDefaultLookAndFeelDecorated(true);
         //ฟังก์ชั่นจะทำการลบ รายชื่อไฟล์ที่ต้องการ ลบ เมื่อกดปุ่มลบ
         int index = jList2.getSelectedIndex(); //ตำแหน่งรายชื่อที่เลือก
@@ -230,15 +242,17 @@ FileUtils.copyFile(source, dest);
             model.removeElementAt(index);//ลบรายชื่อ ในหนน้าต่างLIST
                 
         }
-    }//GEN-LAST:event_RemovebuttonMouseClicked
-
+    }
     private void AddbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AddbuttonMouseClicked
-        // TODO add your handling code here:
+        addFile();
+    }//GEN-LAST:event_AddbuttonMouseClicked
+    public void addFile(){
+    // TODO add your handling code here:
         //ฟังก์ชั่น เพิ่มหนังสือเมื่อกดปุ่มเพิ่ม
         JFileChooser fileChooser = new JFileChooser(); //เปิดหน้าต่างเลือกไฟล์
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-      fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("PDF Documents", "pdf"));//แสดงเฉพาะpdf
-      fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("PDF Documents", "pdf"));//แสดงเฉพาะpdf
+        fileChooser.setAcceptAllFileFilterUsed(false);
         int returnValue = fileChooser.showOpenDialog(null);
         if (returnValue == JFileChooser.APPROVE_OPTION) {//เมื่อเลือกไฟล์แล้วตกตกลง
             File selectedFile = fileChooser.getSelectedFile(); 
@@ -269,8 +283,8 @@ FileUtils.copyFile(source, dest);
 
             System.out.println("Time taken by Apache Commons IO Copy = "+(System.nanoTime()-start));
         }
-    }//GEN-LAST:event_AddbuttonMouseClicked
-
+    
+    }
     private void OpenbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_OpenbuttonMouseClicked
         // TODO add your handling code here:
         int index = jList2.getSelectedIndex();
