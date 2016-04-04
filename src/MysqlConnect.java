@@ -16,8 +16,7 @@ class MySqlConnect {
             Class.forName("com.mysql.jdbc.Driver");
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/member2","root","123456"); //เชื่อมต่อ database โดยกำหนดให้เป็นแต่ละเครื่อง ตาม Username , password ของแต่ละเครื่อง
             //JOptionPane.showMessageDialog(null, "Connect to database");
-            return conn;
-            
+            return conn;  
         }catch(Exception e){
             JOptionPane.showMessageDialog(null, e);
             return null;

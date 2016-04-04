@@ -45,8 +45,8 @@ public class BookRenderer extends JPanel implements ListCellRenderer<Book> {
             setBackground(Color.LIGHT_GRAY);
             
         } else {
-            panelText.setBackground(list.getBackground());
-            setBackground(list.getBackground());
+            panelText.setBackground(Color.white);
+            setBackground(Color.white);
         }
  
         return this;

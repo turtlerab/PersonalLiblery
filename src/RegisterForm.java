@@ -8,7 +8,8 @@ import java.util.logging.Logger;
 import javax.mail.MessagingException;
 
 public class RegisterForm extends javax.swing.JFrame {
-
+    Connection conn = null;
+    PreparedStatement pstmt = null;
     String ConfirmCode = null; //ตัวแปรที่จะส่งค่าให้กับ Confirm Class
     public RegisterForm() {
         initComponents();
@@ -151,53 +152,56 @@ public class RegisterForm extends javax.swing.JFrame {
     }//GEN-LAST:event_bBacktoLoginActionPerformed
 
     private void bRegisComfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRegisComfirmActionPerformed
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        conn = MySqlConnect.ConnectDB(); //เชื่อมต่อกับ database
         try{
-            
-            String query = "SELECT `Username`, `Password` FROM `member` WHERE `Username` = ?" ; //กำหนดคำสั่งที่จะส่งให้ database
-            PreparedStatement checkstmt = conn.prepareStatement(query);
-            checkstmt.setString(1, tfRegisUser.getText()); //กำหนดค่าที่จะส่งให้ database
-            ResultSet result =  checkstmt.executeQuery(); //เก้บผลลัพธ์ของการส่งค่า
-            
-            if(result.next()){ //หากมีค่าที่ส่งไปอยู่ใน database แสดงว่า Username ที่สมัครซ้ำ
-                    JOptionPane.showMessageDialog(null, "Username Duplicate!!");
-            }else{ 
+            if(checkDuplicate(tfRegisUser.getText())){
+                JOptionPane.showMessageDialog(null, "Username Duplicate!!");
+            }else{
                 if(tfRegisUser.getText().equals("")){  //Username ยังไม่ได้กรอก
-                    JOptionPane.showMessageDialog(null, "Please Enter Username!!");
-                               
+                    JOptionPane.showMessageDialog(null, "Please Enter Username!!");                   
                 }else if(pfRegispass.getText().equals("")){ //password ยังไม่ได้กรอก
                     JOptionPane.showMessageDialog(null, "Please Enter Password!!");
                 }else if(tfRegisEmail.getText().equals("")){ //Email ยังไม่ได้กรอก
                     JOptionPane.showMessageDialog(null, "Please Enter Email!!");
-                }else{
-                    
+                }else{                
                     String[] to = {tfRegisEmail.getText()}; //เก็บ Email ผู้รับ
                     MyStringRandomGen msr = new MyStringRandomGen(); //random Code Confirm
                     ConfirmCode = msr.generateRandomString();
                     System.out.println(ConfirmCode);
                     if(EmailSender.sendMail("PDF_viewer@hotmail.com","abc123456789","Code Confirm for Register:"+ConfirmCode,to)){ //ส่ง codeconfirm ไปให้Email ผู้รับ
                         System.out.println("Send to Email Successful");
-                        Confirm confirm = new Confirm(tfRegisUser.getText(),pfRegispass.getPassword(),ConfirmCode); //เมื่อส่งสำเร็จจะสร้างหน้าต่างสำหรับใส่ codeconfirm
+                        Confirm confirm = new Confirm(tfRegisUser.getText(),pfRegispass.getText(),ConfirmCode); //เมื่อส่งสำเร็จจะสร้างหน้าต่างสำหรับใส่ codeconfirm
                         confirm.setVisible(true); //เปิดหน้าต่างใส่ codeconfirm                       
                     }
                     else System.out.println("Error"); //หากส่งไม่สำเร็จจะแจ้งเตือน Error
                 }
             }
-                
-
-
-                
-            
-            
-        }catch(SQLException e){
-            JOptionPane.showMessageDialog(null, e.toString());
-        } catch (MessagingException ex) {
+        }catch (MessagingException ex) {
             Logger.getLogger(RegisterForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_bRegisComfirmActionPerformed
 
+    public boolean checkDuplicate(String Username){
+        boolean resultDuplicate = false;
+        try{
+            conn = MySqlConnect.ConnectDB(); //เชื่อมต่อกับ database
+            String query = "SELECT `Username`, `Password` FROM `member` WHERE `Username` = ?" ; //กำหนดคำสั่งที่จะส่งให้ database
+            PreparedStatement checkstmt = conn.prepareStatement(query);
+            checkstmt.setString(1,Username); //กำหนดค่าที่จะส่งให้ database
+            ResultSet result =  checkstmt.executeQuery(); //เก้บผลลัพธ์ของการส่งค่า
+            
+            if(result.next()){ //หากมีค่าที่ส่งไปอยู่ใน database แสดงว่า Username ที่สมัครซ้ำ
+                resultDuplicate = true;
+            }else{ 
+                resultDuplicate = false;
+            }
+        }catch(SQLException e){
+            JOptionPane.showMessageDialog(null, e.toString());
+        }
+    return resultDuplicate;
+    }
+    
+    
+    
     /**
      * @param args the command line arguments
      */

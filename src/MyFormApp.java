@@ -4,8 +4,7 @@
  * and open the template in the editor.
  */
 
-import com.adobe.acrobat.Viewer;
-import com.adobe.acrobat.ViewerCommand;
+
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
 import java.awt.BorderLayout;
@@ -32,6 +31,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -40,15 +40,23 @@ import java.nio.channels.FileChannel;
 import org.apache.commons.io.FilenameUtils;
 import javax.imageio.ImageIO;
 
-import com.sun.pdfview.PDFFile;
-import com.sun.pdfview.PDFPage;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import static org.jpedal.examples.simpleviewer.SimpleViewer.file;
+import org.icepdf.ri.common.SwingController;
+import org.icepdf.ri.common.SwingViewBuilder;
+
 /**
  *
  * @author ball_
@@ -58,31 +66,30 @@ public class MyFormApp extends javax.swing.JFrame {
     /**
      * Creates new form MyFormApp
      */
-    int i =0;   
     String folderPath = null;
-    File[] fileList = null;
-    String[] data = null;
-    String PATH = null;
+    String PATH = null; //ที่อยู่ที่เก็บไฟล์หนังสือและภาพ
     DefaultListModel<Book> model = new DefaultListModel();  //ตั้งตัวแปรทำ icon สำหรับ LIST
-    public MyFormApp(String pathfolder) {
-        folderPath = pathfolder;
+    String pathgetpage = null;
+    ArrayList<String> listNamePage = new ArrayList<String>();
+    int i =0;  
+    public MyFormApp(String pathFolder) {
         initComponents();
-        //File[] fileList = getFileList(folderPath); //เรียกใช้ฟังก์ชั่นหารายชื่อไฟล์ แล้วเก็บรายชื่อไฟล์
-        //String[] data = new String[fileList.length];  
-        //String PATH = folderPath+"\\"; //ที่อยู่ที่เก็บไฟล์หนังสือและภาพ
-        fileList = getFileList(folderPath); //เรียกใช้ฟังก์ชั่นหารายชื่อไฟล์ แล้วเก็บรายชื่อไฟล์
-        data = new String[fileList.length];  
-        PATH = folderPath+"\\"; //ที่อยู่ที่เก็บไฟล์หนังสือและภาพ
+        folderPath = pathFolder;
+        PATH = pathFolder+"\\";
+        pathgetpage = pathFolder+"\\write.txt";
     }
-         
-        
-        
      public static File[] getFileList(String dirPath) { // ฟังก์ชั่นสำหรับค้นหาไฟล์ pdf ที่อยู่ในโฟล์เดอร์
             File dir = new File(dirPath);   
 
             File[] fileList = dir.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) { //ค้นหารายชื่อไฟล์ทั้งหมดในโฟล์เดอร์
+                    if(name.endsWith(".PDF")){
+                    return name.endsWith(".PDF");
+                }
+                if(name.endsWith(".pdf")){
                     return name.endsWith(".pdf");
+                }
+                return false;
                 }
             });
             return fileList;
@@ -95,21 +102,33 @@ public class MyFormApp extends javax.swing.JFrame {
      private static void copyFileUsingApacheCommonsIO(File source, File dest) throws IOException { //ฟังก์ชั่น ก๊อปปี้ไฟล์pdf เมื่อทำการเพิ่มหนังสือ ไปเก็บยังโฟล์เดอร์เฉพาะ
 FileUtils.copyFile(source, dest); 
 }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
+        jFrame1 = new javax.swing.JFrame();
+        jFrame2 = new javax.swing.JFrame();
+        jFrame3 = new javax.swing.JFrame();
+        jFrame4 = new javax.swing.JFrame();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
+        jColorChooser1 = new javax.swing.JColorChooser();
+        jFrame5 = new javax.swing.JFrame();
+        jFrame6 = new javax.swing.JFrame();
+        jFrame7 = new javax.swing.JFrame();
+        jFrame8 = new javax.swing.JFrame();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        Openbutton = new javax.swing.JButton();
-        Addbutton = new javax.swing.JButton();
-        Removebutton = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jList2 = new javax.swing.JList<Book>();
-        btLogout = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        AddFile = new javax.swing.JMenuItem();
+        RemoveFile = new javax.swing.JMenuItem();
+        Exit = new javax.swing.JMenuItem();
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -122,49 +141,100 @@ FileUtils.copyFile(source, dest);
             .addGap(0, 530, Short.MAX_VALUE)
         );
 
+        javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
+        jFrame1.getContentPane().setLayout(jFrame1Layout);
+        jFrame1Layout.setHorizontalGroup(
+            jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame1Layout.setVerticalGroup(
+            jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jFrame2Layout = new javax.swing.GroupLayout(jFrame2.getContentPane());
+        jFrame2.getContentPane().setLayout(jFrame2Layout);
+        jFrame2Layout.setHorizontalGroup(
+            jFrame2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame2Layout.setVerticalGroup(
+            jFrame2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jFrame3Layout = new javax.swing.GroupLayout(jFrame3.getContentPane());
+        jFrame3.getContentPane().setLayout(jFrame3Layout);
+        jFrame3Layout.setHorizontalGroup(
+            jFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame3Layout.setVerticalGroup(
+            jFrame3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jFrame4Layout = new javax.swing.GroupLayout(jFrame4.getContentPane());
+        jFrame4.getContentPane().setLayout(jFrame4Layout);
+        jFrame4Layout.setHorizontalGroup(
+            jFrame4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame4Layout.setVerticalGroup(
+            jFrame4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jFrame5Layout = new javax.swing.GroupLayout(jFrame5.getContentPane());
+        jFrame5.getContentPane().setLayout(jFrame5Layout);
+        jFrame5Layout.setHorizontalGroup(
+            jFrame5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame5Layout.setVerticalGroup(
+            jFrame5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jFrame6Layout = new javax.swing.GroupLayout(jFrame6.getContentPane());
+        jFrame6.getContentPane().setLayout(jFrame6Layout);
+        jFrame6Layout.setHorizontalGroup(
+            jFrame6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame6Layout.setVerticalGroup(
+            jFrame6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jFrame7Layout = new javax.swing.GroupLayout(jFrame7.getContentPane());
+        jFrame7.getContentPane().setLayout(jFrame7Layout);
+        jFrame7Layout.setHorizontalGroup(
+            jFrame7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame7Layout.setVerticalGroup(
+            jFrame7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jFrame8Layout = new javax.swing.GroupLayout(jFrame8.getContentPane());
+        jFrame8.getContentPane().setLayout(jFrame8Layout);
+        jFrame8Layout.setHorizontalGroup(
+            jFrame8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame8Layout.setVerticalGroup(
+            jFrame8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jTabbedPane1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
         jPanel1.setBackground(new java.awt.Color(102, 153, 255));
-        jPanel1.setLayout(null);
-
-        Openbutton.setText("Open");
-        Openbutton.setPreferredSize(new java.awt.Dimension(60, 30));
-        Openbutton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                OpenbuttonMouseClicked(evt);
-            }
-        });
-        jPanel1.add(Openbutton);
-        Openbutton.setBounds(660, 100, 110, 40);
-
-        Addbutton.setText("Add");
-        Addbutton.setPreferredSize(new java.awt.Dimension(60, 30));
-        Addbutton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                AddbuttonMouseClicked(evt);
-            }
-        });
-        Addbutton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AddbuttonActionPerformed(evt);
-            }
-        });
-        jPanel1.add(Addbutton);
-        Addbutton.setBounds(661, 150, 110, 40);
-
-        Removebutton.setText("Remove");
-        Removebutton.setPreferredSize(new java.awt.Dimension(60, 30));
-        Removebutton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                RemovebuttonMouseClicked(evt);
-            }
-        });
-        jPanel1.add(Removebutton);
-        Removebutton.setBounds(660, 200, 110, 40);
-
-        jList2.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel1.setLayout(new javax.swing.OverlayLayout(jPanel1));
 
         jList2.addAncestorListener(new javax.swing.event.AncestorListener() {
             public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
@@ -175,25 +245,52 @@ FileUtils.copyFile(source, dest);
             public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
             }
         });
+        jList2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jList2MouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(jList2);
 
         jPanel1.add(jScrollPane2);
-        jScrollPane2.setBounds(60, 80, 540, 432);
-
-        btLogout.setText("Logout");
-        btLogout.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btLogoutActionPerformed(evt);
-            }
-        });
-        jPanel1.add(btLogout);
-        btLogout.setBounds(660, 260, 110, 50);
 
         jTabbedPane1.addTab("      main     ", jPanel1);
 
         jPanel5.setBackground(new java.awt.Color(102, 153, 255));
         jPanel5.setLayout(new javax.swing.OverlayLayout(jPanel5));
         jTabbedPane1.addTab("       Display PDF     ", jPanel5);
+
+        jMenu1.setText("File");
+
+        AddFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        AddFile.setText("Add File");
+        AddFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AddFileActionPerformed(evt);
+            }
+        });
+        jMenu1.add(AddFile);
+
+        RemoveFile.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        RemoveFile.setText("Remove File");
+        RemoveFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RemoveFileActionPerformed(evt);
+            }
+        });
+        jMenu1.add(RemoveFile);
+
+        Exit.setText("Exit");
+        Exit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ExitActionPerformed(evt);
+            }
+        });
+        jMenu1.add(Exit);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -213,27 +310,173 @@ FileUtils.copyFile(source, dest);
 
         setBounds(0, 0, 1074, 830);
     }// </editor-fold>//GEN-END:initComponents
+   String oldname=null;
+            int oldpage ;
+            // build a component controller
+                      SwingController controller = new SwingController();
+                      SwingViewBuilder factory = new SwingViewBuilder(controller);
+                      JPanel viewerComponentPanel = factory.buildViewerPanel();
+    void openMenuItemActionPerformed() throws FileNotFoundException { //ฟังก์ชั่นเปิด หนังสือ
+            int index = jList2.getSelectedIndex(); //ตำแหน่งที่เลือก
+            int currentPageNumber = controller.getCurrentPageNumber();  
+             
+                if(oldname!=null){      
+                     
+                      System.out.print(listNamePage.size());
+                      UpdateToFile(listNamePage,oldname+"["+oldpage+"]",oldname+"["+currentPageNumber+"]");
+                      
+                }
+		jPanel5.removeAll(); //ลบข้อมูลเก่าที่แสดงก่อนหน้า
+                int page = Integer.parseInt(findPage(folderPath,""+model.getElementAt(index)));
+                jTabbedPane1.setSelectedIndex(1);
+		jPanel5.setLayout(new BorderLayout());		
+                        String filePath = PATH+model.getElementAt(index);   
+                        oldname = ""+model.getElementAt(index);
+                     
+                      
+			jPanel5.add(viewerComponentPanel);
+                        controller.openDocument(filePath);
+                        controller.showPage(page);
+                        oldpage = page;  
+			jPanel5.setSize(800, 600);
+			//jPanel5.pack();
+			jPanel5.setVisible(true);
+                        //jPanel5.validate();    
+                
+    }  
+    
+    public String findPage(String path,String Name) throws FileNotFoundException {
+         //สร้างไฟล์ ที่จะอ่าน
+    File text = new File(path+"\\write.txt");
+    //สร้าง scanner เพื่ออ่านไล์
+    Scanner s1 = new Scanner(text);    
+    String s = new String();
+    while (s1.hasNext()) //ไล่หาคำที่ต้องการ
+                        {
+                            String a = s1.nextLine();                    
+                             Pattern pattern = Pattern.compile("("+Name+"\\[)(.*?)(\\])");
+                             Matcher matcher = pattern.matcher(a);                    
+                             if (matcher.find()) {
+                              // System.out.println(matcher.group(2));
+                               s = matcher.group(2);
+                               }
 
-    private void RemovebuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RemovebuttonMouseClicked
+                        }
+    return s;
+    }
+
+    public void WriteToFile(ArrayList<String> list) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(pathgetpage));
+			for (String x : list) {
+				writer.write(x);
+				writer.newLine();
+			}
+			writer.close();
+		} catch (IOException e) {
+			e.getStackTrace();
+		}
+	}
+	public void deleteFromFile(ArrayList<String> list, String search)
+	{
+		for(int i=0;i<list.size();i++)
+		{
+			if(list.get(i).equals(search))
+			{
+				list.remove(i);
+				WriteToFile(list);
+                               
+			}
+		}
+	}
+	public void UpdateToFile(ArrayList<String> list,String search, String Update)
+	{
+		for(int i=0;i<list.size();i++)
+		{
+			if(list.get(i).equals(search)){
+				list.set(i, Update);
+				WriteToFile(list);
+                               
+			}
+		}
+	}
+  
+        
+        
+    public  void keeplist() throws FileNotFoundException{
+        if(listNamePage.isEmpty()== false){
+            listNamePage.clear();
+             i=0;
+              model.clear();
+        }
+        
+        File text = new File(pathgetpage);
+        //สร้าง scanner เพื่ออ่านไล์
+        Scanner s1 = new Scanner(text);    
+        
+        while (s1.hasNext()) //ไล่หาคำที่ต้องการ
+           {
+              String a = s1.nextLine(); 
+              
+              listNamePage.add(a);
+            
+            }
+        
+    }
+    private void jList2AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_jList2AncestorAdded
+        try {
+            File[] fileList = getFileList(folderPath); //เรียกใช้ฟังก์ชั่นหารายชื่อไฟล์ แล้วเก็บรายชื่อไฟล์
+            String[] data = new String[fileList.length];
+            // TODO add your handling code here:
+            keeplist();
+            for(File file : fileList) {  //ไล่รายชื่อ
+           
+            data[i] = (file.getName());
+            System.out.println(data[i]);
+            String imagename = FilenameUtils.removeExtension(data[i]);
+            System.out.println(imagename);
+            int a= Integer.parseInt(findPage(folderPath,file.getName()))+1;
+            model.addElement(new Book(data[i], ""+a, imagename,PATH) ); //ใส่ข้อมูล ลำดับหนังสือ ชื่อรูปภาพ ที่อยู่ของภาพ สำหรับทำไอคอน
+            i=i+1;
+
+        }
+           
+        jList2.setModel(model);
+        jList2.setCellRenderer(new BookRenderer());
+            // ฟังก์ชั่น LIST หนังสือ
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MyFormApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jList2AncestorAdded
+
+    private void RemoveFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RemoveFileActionPerformed
         // TODO add your handling code here:JDialog.setDefaultLookAndFeelDecorated(true);
         //ฟังก์ชั่นจะทำการลบ รายชื่อไฟล์ที่ต้องการ ลบ เมื่อกดปุ่มลบ
         int index = jList2.getSelectedIndex(); //ตำแหน่งรายชื่อที่เลือก
         int response = JOptionPane.showConfirmDialog(null, "Do you want to delete "+model.getElementAt(index)+" ?", "Confirm", //หน้าต่างแจ้งเตือนคอนเฟิร์มเพื่อลบ
             JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        try {
+            String a = findPage(folderPath,""+model.getElementAt(index));
+             System.out.println(model.getElementAt(index));
         if (response == JOptionPane.YES_OPTION) {//กดตกลงจะทำตามเงื่อนไข
 
             if (model.getSize() > 0)
             System.out.println( PATH+model.getElementAt(index));//แสดงรายชื่อที่ลบ
-
+            deleteFromFile(listNamePage,model.getElementAt(index)+"["+a+"]");
             deleteDir(new File(PATH+model.getElementAt(index)));//ลบไฟล์ pdf ในโฟล์เดอร์
             deleteDir(new File(PATH+model.getElementAt(index).getIconName()+".png"));//ลบไฟล์รูปในโฟล์เดอร์
             model.removeElementAt(index);//ลบรายชื่อ ในหนน้าต่างLIST
                 
         }
-    }//GEN-LAST:event_RemovebuttonMouseClicked
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MyFormApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
+    }//GEN-LAST:event_RemoveFileActionPerformed
 
-    private void AddbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AddbuttonMouseClicked
+    private void AddFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddFileActionPerformed
         // TODO add your handling code here:
+           // TODO add your handling code here:
         //ฟังก์ชั่น เพิ่มหนังสือเมื่อกดปุ่มเพิ่ม
         JFileChooser fileChooser = new JFileChooser(); //เปิดหน้าต่างเลือกไฟล์
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -244,9 +487,9 @@ FileUtils.copyFile(source, dest);
             File selectedFile = fileChooser.getSelectedFile(); 
             try {
                 pdfToimage(selectedFile); //ทำการเซฟรูปหน้าปกของไฟล์ที่เลือก
-            } catch (IOException ex) {
-                Logger.getLogger(MyFormApp.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                listNamePage.add(selectedFile.getName()+"[0]");
+                WriteToFile(listNamePage);
+           
 
             System.out.println(selectedFile.getName()); //แสดงรายชื่อที่หนังสือที่เลือกเพิ่ม
             File source = new File(""+selectedFile);
@@ -255,85 +498,60 @@ FileUtils.copyFile(source, dest);
             long start = System.nanoTime();
             //copy files using apache commons io
             start = System.nanoTime();
-            int a=i+1;
-            String imagename = FilenameUtils.removeExtension(selectedFile.getName());
-            model.addElement(new Book(selectedFile.getName(), ""+a , imagename,PATH)); //ใส่รายชื่อในlist
-            i=i+1;
+            
+            String a = findPage(folderPath,""+selectedFile.getName());
+          
+               
+                 String imagename = FilenameUtils.removeExtension(selectedFile.getName());
+           
+            model.addElement(new Book(selectedFile.getName(), a , imagename,PATH)); //ใส่รายชื่อในlist
+           
+           
+        
             jList2.setModel(model);
             jList2.setCellRenderer(new BookRenderer());
-            try {
+           
                 copyFileUsingApacheCommonsIO(source, dest); //ก็อปปี้ไฟล์ไปใส่ในโฟล์เดอร์เฉพาะ
-            } catch (IOException ex) {
-                Logger.getLogger(MyFormApp.class.getName()).log(Level.SEVERE, null, ex);
-            }
+           
 
             System.out.println("Time taken by Apache Commons IO Copy = "+(System.nanoTime()-start));
+             } catch (IOException ex) {
+                Logger.getLogger(MyFormApp.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-    }//GEN-LAST:event_AddbuttonMouseClicked
+    }//GEN-LAST:event_AddFileActionPerformed
 
-    private void OpenbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_OpenbuttonMouseClicked
+    private void jList2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList2MouseClicked
+        // TODO add your handling code here:
+          JList list = (JList)evt.getSource();
+    if (evt.getClickCount() == 2) {
         // TODO add your handling code here:
         int index = jList2.getSelectedIndex();
-        System.out.println( model.getElementAt(index)); //แสดงรายชื่อไฟล์ที่เปิด
-        openMenuItemActionPerformed(); //เรียกใช้ฟังก์ชั่นเพื่อเปิด หนังสือ ในแทปที่ 2
-     
-    }//GEN-LAST:event_OpenbuttonMouseClicked
-
-    private void jList2AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_jList2AncestorAdded
-        // TODO add your handling code here:
-        // ฟังก์ชั่น LIST หนังสือ
-        for(File file : fileList) {  //ไล่รายชื่อ
-
-            data[i] = (file.getName());
-            System.out.println(data[i]);
-            String imagename = FilenameUtils.removeExtension(data[i]);
-             int a=i+1;
-            model.addElement(new Book(data[i], ""+a, imagename,PATH) ); //ใส่ข้อมูล ลำดับหนังสือ ชื่อรูปภาพ ที่อยู่ของภาพ สำหรับทำไอคอน
-            i=i+1;
-
-        }
-        jList2.setModel(model);
-        jList2.setCellRenderer(new BookRenderer());
-    }//GEN-LAST:event_jList2AncestorAdded
-
-    private void btLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLogoutActionPerformed
-        dispose();
-        LoginForm login = new LoginForm();
-        login.setVisible(true);
-    }//GEN-LAST:event_btLogoutActionPerformed
-
-    private void AddbuttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddbuttonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_AddbuttonActionPerformed
-
-
-    
-    void openMenuItemActionPerformed() { //ฟังก์ชั่นเปิด หนังสือ
-            int index = jList2.getSelectedIndex(); //ตำแหน่งที่เลือก
-            try
-            {
-                FileInputStream inputStream = new FileInputStream(PATH+model.getElementAt(index)); //เปิดไฟล์ที่เลือก
-                Viewer viewer = new Viewer();
-                viewer.setDocumentInputStream( inputStream );//set ไฟล์ที่จะเปิด
-
-                jPanel5.removeAll(); //ลบข้อมูลเก่าที่แสดงก่อนหน้า
-               
-               jPanel5.add(viewer);//ใส่ข้อมูลที่จะแสดง
-                viewer.activate();
-                 
-                jPanel5.validate();
-                
-            }
-            catch (FileNotFoundException ex)
-            {
-                JOptionPane.showMessageDialog(this,"Cannot find the file!");
-            }
-            catch(Exception e)
-            {
-                JOptionPane.showMessageDialog(this,"Cannot open the file!");
-            }
         
+        System.out.println( model.getElementAt(index)); //แสดงรายชื่อไฟล์ที่เปิด
+        try {
+            
+            openMenuItemActionPerformed(); //เรียกใช้ฟังก์ชั่นเพื่อเปิด หนังสือ ในแทปที่ 2
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MyFormApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     
     }
+    }//GEN-LAST:event_jList2MouseClicked
+
+    private void ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExitActionPerformed
+        // TODO add your handling code here:
+         int response = JOptionPane.showConfirmDialog(null, "Do you want to close window", "Confirm", //หน้าต่างแจ้งเตือนคอนเฟิร์มเพื่อลบ
+            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+       
+            
+        if (response == JOptionPane.YES_OPTION) {//กดตกลงจะทำตามเงื่อนไข
+             System.exit(0);
+           
+        }
+       
+       
+    }//GEN-LAST:event_ExitActionPerformed
 
     public static boolean deleteDir(File dir) { //ฟังก์ชั่นลบไฟล์
       if (dir.isDirectory()) {
@@ -349,7 +567,7 @@ FileUtils.copyFile(source, dest);
       return dir.delete();
       
   }
-    void pdfToimage(File filename) throws FileNotFoundException, IOException { //แปลงpdfเป็นรูปภาพ เฉพาะหน้าปก
+     void pdfToimage(File filename) throws FileNotFoundException, IOException { //แปลงpdfเป็นรูปภาพ เฉพาะหน้าปก
         
         // TODO Auto-generated method stub
         File pdfFile = new File(filename.toString()); //เปิดไฟล์ pdf
@@ -360,9 +578,7 @@ FileUtils.copyFile(source, dest);
 
         int i=0;
         String fileNameWithOutExt = FilenameUtils.removeExtension(filename.getName());  
-       
-    
-    
+  
         Rectangle rect = new Rectangle(0, 0, (int) pdf.getPage(i).getBBox().getWidth(), //ตั้งค่ารูป
                 (int) pdf.getPage(i).getBBox().getHeight());
         BufferedImage bufferedImage = new BufferedImage(100, 100,
@@ -377,12 +593,12 @@ FileUtils.copyFile(source, dest);
         Graphics2D bufImageGraphics = bufferedImage.createGraphics();
         bufImageGraphics.drawImage(image.getScaledInstance(100, 100, Image.SCALE_AREA_AVERAGING),0,0,null);
      
-        ImageIO.write(bufferedImage, "PNG", new File( PATH+fileNameWithOutExt+".png" )); //บันทึกภาพ 
+        ImageIO.write(bufferedImage, "PNG", new File(PATH+fileNameWithOutExt+".png" )); //บันทึกภาพ 
     }
     /**
      * @param args the command line arguments
      */
-    void main(String args[]) {
+    public void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -414,17 +630,27 @@ FileUtils.copyFile(source, dest);
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new MyFormApp(folderPath).setVisible(true);
-            }
-            
+            }        
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Addbutton;
-    private javax.swing.JButton Openbutton;
-    private javax.swing.JButton Removebutton;
-    private javax.swing.JButton btLogout;
+    private javax.swing.JMenuItem AddFile;
+    private javax.swing.JMenuItem Exit;
+    private javax.swing.JMenuItem RemoveFile;
+    private javax.swing.Box.Filler filler1;
+    private javax.swing.JColorChooser jColorChooser1;
+    private javax.swing.JFrame jFrame1;
+    private javax.swing.JFrame jFrame2;
+    private javax.swing.JFrame jFrame3;
+    private javax.swing.JFrame jFrame4;
+    private javax.swing.JFrame jFrame5;
+    private javax.swing.JFrame jFrame6;
+    private javax.swing.JFrame jFrame7;
+    private javax.swing.JFrame jFrame8;
     private javax.swing.JList<Book> jList2;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -433,7 +659,7 @@ FileUtils.copyFile(source, dest);
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 
-
+   
 }
     
 

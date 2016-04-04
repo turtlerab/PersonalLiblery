@@ -1,6 +1,12 @@
 
+
 import java.awt.HeadlessException;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.sql.*;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -22,8 +28,13 @@ public class LoginForm extends javax.swing.JFrame {
     /**
      * Creates new form LoginForm
      */
-    public LoginForm() {
+    public LoginForm() throws FileNotFoundException {
         initComponents();
+        File file = new File("C:\\Users\\ธนพล\\Desktop\\SakNoi\\building II\\LoginField\\StorefolderUser\\RememberUser.txt");
+        Scanner scan = new Scanner(file);
+        tfUsername.setText(scan.nextLine());
+        pfPassword.setText(scan.nextLine());
+        file.delete();
     }
 
     /**
@@ -149,26 +160,14 @@ public class LoginForm extends javax.swing.JFrame {
     }//GEN-LAST:event_bClearActionPerformed
 
     private void bLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bLoginActionPerformed
-       conn  = MySqlConnect.ConnectDB();  //เชื่อต่อกับ database
-       String Sql = "SELECT `Username`, `Password` FROM `member` WHERE `Username` = ? AND `Password` = ?"; // ข้อความส่งไป database
-       try{
-           ps = conn.prepareStatement(Sql);
-           ps.setString(1,tfUsername.getText()); // Username ที่ส่ง
-           ps.setString(2,pfPassword.getText()); // password ที่สง
-           rs=ps.executeQuery();
-           
-           if(rs.next()){ 
-               JOptionPane.showMessageDialog(null, "welcome "+tfUsername.getText());
+
+        if(checkUserInDB(tfUsername.getText(),pfPassword.getText())){
                String folderUser = "C:\\Users\\ธนพล\\Desktop\\SakNoi\\building II\\LoginField\\StorefolderUser\\"+tfUsername.getText();//ชื่อ path ของfolder ที่จะสร้างของแต่ละ User
                MyFormApp app = new MyFormApp(folderUser); //สร้าง หน้าต่างแสดงรายชื่อหนังสือและส่ง path ไปให้ 
                app.setVisible(true); //เปิดหน้าต่างแสดงายชื่อหนังสือ
                dispose(); //ปิดหน้าต่างเดิม(login)
-           }else{
-               JOptionPane.showMessageDialog(null, "Username or Password is wrong");
-           }
-       }catch(SQLException | HeadlessException e){
-           JOptionPane.showMessageDialog(null,e);
-       }           
+               createRememberUser(tfUsername.getText(),pfPassword.getText());
+        }
     }//GEN-LAST:event_bLoginActionPerformed
 
     private void bRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRegisterActionPerformed
@@ -176,7 +175,39 @@ public class LoginForm extends javax.swing.JFrame {
         RegisterForm register = new RegisterForm();
         register.setVisible(true);
     }//GEN-LAST:event_bRegisterActionPerformed
-
+    public boolean checkUserInDB(String Username, String Password){
+       boolean check = false;
+       conn  = MySqlConnect.ConnectDB();  //เชื่อต่อกับ database
+       String Sql = "SELECT `Username`, `Password` FROM `member` WHERE `Username` = ? AND `Password` = ?"; // ข้อความส่งไป database
+       try{
+           ps = conn.prepareStatement(Sql);
+           ps.setString(1,Username); // Username ที่ส่ง
+           ps.setString(2,Password); // password ที่สง
+           rs=ps.executeQuery();
+           
+           if(rs.next()){ 
+               JOptionPane.showMessageDialog(null, "welcome "+Username);
+               check = true;
+           }else{
+               JOptionPane.showMessageDialog(null, "Username or Password is wrong");
+               check = false;
+           }
+       }catch(SQLException | HeadlessException e){
+           JOptionPane.showMessageDialog(null,e);
+       }
+       return check;
+    }
+    public void createRememberUser(String Username,String Password){
+        try{
+            BufferedWriter createRemember = new BufferedWriter(new FileWriter("C:\\Users\\ธนพล\\Desktop\\SakNoi\\building II\\LoginField\\StorefolderUser\\RememberUser.txt"));
+                createRemember.write(Username);
+                createRemember.newLine();
+                createRemember.write(Password);
+                createRemember.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
     /**
      * @param args the command line arguments
      */
@@ -202,7 +233,11 @@ public class LoginForm extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            new LoginForm().setVisible(true);
+            try {
+                new LoginForm().setVisible(true);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(LoginForm.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
     }
 

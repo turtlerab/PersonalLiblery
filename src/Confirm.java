@@ -19,9 +19,11 @@ import javax.swing.JOptionPane;
  */
 public class Confirm extends javax.swing.JFrame {
     String Username = null; //ตัวแปรเก็บ Username จาก RegisterForm
-    char[] password = null; //ตัวแปรเก็บ password จาก RegisterForm
+    String password = null; //ตัวแปรเก็บ password จาก RegisterForm
     String Code = null; //ตัวแปรเก็บ ConfirmCode จาก RegisterForm
-    public Confirm(String UsernameRegis,char[] passwordRegis, String CodeConfirmRegis) { //รับพารามิเตอร์3ตัวจาก RegisterForm
+    Connection conn = null;     
+    PreparedStatement pstmt = null;
+    public Confirm(String UsernameRegis,String passwordRegis, String CodeConfirmRegis) { //รับพารามิเตอร์3ตัวจาก RegisterForm
         initComponents();
         Username = UsernameRegis; //ให้ตัวแปร Username เก็บค่าพารามิเตอร์ตัวแรก(Username)
         password = passwordRegis; //ให้ตัวแปร password เก็บค่าพารามิเตอร์ตัวสอง(password)
@@ -102,15 +104,13 @@ public class Confirm extends javax.swing.JFrame {
     }//GEN-LAST:event_btCancelActionPerformed
 
     private void btCodeConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCodeConfirmActionPerformed
-        Connection conn = null;     
-        PreparedStatement pstmt = null;
-        conn = MySqlConnect.ConnectDB();   //เชื่อมต่อไปยัง Database
-        if(tfCodeConfirm.getText().equals((String)Code)){  //ตรวจสอบ codeconfirm 
-            try {
-                
+
+        if(checkConfirm(tfCodeConfirm.getText(),Code)){
+            try {            
+                conn = MySqlConnect.ConnectDB();   //เชื่อมต่อไปยัง Database
                 pstmt = conn.prepareStatement("insert into member values(?,?)");  //กำหนด ข้อมูลที่จะเพิ่มใน database
                 pstmt.setString(1, Username);  
-                pstmt.setString(2,String.valueOf(password));
+                pstmt.setString(2,password);
                 int i = pstmt.executeUpdate();  //เมื่อ database มีการ update i จะ เท่ากับ 1
                 File newFile = new File("C:\\Users\\ธนพล\\Desktop\\SakNoi\\building II\\LoginField\\StorefolderUser\\"+Username);
                 newFile.mkdir();  //สร้าง folder ตามชื่อ Username เพื่อเก็บไฟล์ pdf ของแต่ละ user
@@ -123,15 +123,24 @@ public class Confirm extends javax.swing.JFrame {
                     login.setVisible(true); //เปิดหน้า login
                 }else{
                     JOptionPane.showMessageDialog(null, "Regis fail"); //เมื่อไม่มีการ update ข้อมูลจาก database(สมัครไม่สำเร็จ) จะทำการแจ้งเตือนว่าสมัครไม่สำเร็จ
-                }
+                }    
             } catch (SQLException ex) {
                 Logger.getLogger(Confirm.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }else{ //เมื่อส่ง CodeConfirm ไม่สำเร็จจะแจ้งเตือน
-            System.out.println("Send ConfirmCode Fail");
         }
     }//GEN-LAST:event_btCodeConfirmActionPerformed
 
+        public boolean checkConfirm(String EnterCode,String ConfirmCode){
+            boolean resultConfirm = false;       
+            if(EnterCode.equals(ConfirmCode)){  //ตรวจสอบ codeconfirm 
+                resultConfirm = true;
+            }else{ //เมื่อส่ง CodeConfirm ไม่สำเร็จจะแจ้งเตือน
+                System.out.println("Send ConfirmCode Fail");
+                resultConfirm = false;
+            }
+        return resultConfirm;
+        }
+        
     /**
      * @param args the command line arguments
      */
