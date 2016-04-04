@@ -185,12 +185,7 @@ public class RegisterForm extends javax.swing.JFrame {
                     else System.out.println("Error"); //หากส่งไม่สำเร็จจะแจ้งเตือน Error
                 }
             }
-                
-
-
-                
-            
-            
+   
         }catch(SQLException e){
             JOptionPane.showMessageDialog(null, e.toString());
         } catch (MessagingException ex) {

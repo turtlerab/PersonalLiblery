@@ -149,7 +149,7 @@ public class LoginForm extends javax.swing.JFrame {
     }//GEN-LAST:event_bClearActionPerformed
 
     private void bLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bLoginActionPerformed
-       conn  = MySqlConnect.ConnectDB();  //เชื่อต่อกับ database
+       /*conn  = MySqlConnect.ConnectDB();  //เชื่อต่อกับ database
        String Sql = "SELECT `Username`, `Password` FROM `member` WHERE `Username` = ? AND `Password` = ?"; // ข้อความส่งไป database
        try{
            ps = conn.prepareStatement(Sql);
@@ -168,7 +168,8 @@ public class LoginForm extends javax.swing.JFrame {
            }
        }catch(SQLException | HeadlessException e){
            JOptionPane.showMessageDialog(null,e);
-       }           
+       }*/
+        checkUserInDB(tfUsername.getText(),pfPassword.getText());
     }//GEN-LAST:event_bLoginActionPerformed
 
     private void bRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRegisterActionPerformed
@@ -176,7 +177,28 @@ public class LoginForm extends javax.swing.JFrame {
         RegisterForm register = new RegisterForm();
         register.setVisible(true);
     }//GEN-LAST:event_bRegisterActionPerformed
-
+    public void checkUserInDB(String Username,String Password){
+       conn  = MySqlConnect.ConnectDB();  //เชื่อต่อกับ database
+       String Sql = "SELECT `Username`, `Password` FROM `member` WHERE `Username` = ? AND `Password` = ?"; // ข้อความส่งไป database
+       try{
+           ps = conn.prepareStatement(Sql);
+           ps.setString(1,Username); // Username ที่ส่ง
+           ps.setString(2,Password); // password ที่สง
+           rs=ps.executeQuery();
+           
+           if(rs.next()){ 
+               JOptionPane.showMessageDialog(null, "welcome "+Username);
+               String folderUser = "C:\\Users\\ธนพล\\Desktop\\SakNoi\\building II\\LoginField\\StorefolderUser\\"+Username;//ชื่อ path ของfolder ที่จะสร้างของแต่ละ User
+               MyFormApp app = new MyFormApp(folderUser); //สร้าง หน้าต่างแสดงรายชื่อหนังสือและส่ง path ไปให้ 
+               app.setVisible(true); //เปิดหน้าต่างแสดงายชื่อหนังสือ
+               dispose(); //ปิดหน้าต่างเดิม(login)
+           }else{
+               JOptionPane.showMessageDialog(null, "Username or Password is wrong");
+           }
+       }catch(SQLException | HeadlessException e){
+           JOptionPane.showMessageDialog(null,e);
+       }
+    }
     /**
      * @param args the command line arguments
      */

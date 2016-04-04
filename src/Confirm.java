@@ -102,36 +102,38 @@ public class Confirm extends javax.swing.JFrame {
     }//GEN-LAST:event_btCancelActionPerformed
 
     private void btCodeConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCodeConfirmActionPerformed
-        Connection conn = null;     
-        PreparedStatement pstmt = null;
-        conn = MySqlConnect.ConnectDB();   //เชื่อมต่อไปยัง Database
-        if(tfCodeConfirm.getText().equals((String)Code)){  //ตรวจสอบ codeconfirm 
-            try {
-                
-                pstmt = conn.prepareStatement("insert into member values(?,?)");  //กำหนด ข้อมูลที่จะเพิ่มใน database
-                pstmt.setString(1, Username);  
-                pstmt.setString(2,String.valueOf(password));
-                int i = pstmt.executeUpdate();  //เมื่อ database มีการ update i จะ เท่ากับ 1
-                File newFile = new File("C:\\Users\\ธนพล\\Desktop\\SakNoi\\building II\\LoginField\\StorefolderUser\\"+Username);
-                newFile.mkdir();  //สร้าง folder ตามชื่อ Username เพื่อเก็บไฟล์ pdf ของแต่ละ user
-                System.out.println("Create Folder for User "+Username+" Successful!!");
-                if(i>0){  // เมื่อมีการ update แจ้งเตือน
-                    JOptionPane.showMessageDialog(null, "Regis successful");  
-                    System.out.println("Register Successful!");
-                    dispose(); //ปิดหน้าต่าง confirm 
-                    LoginForm login = new LoginForm(); 
-                    login.setVisible(true); //เปิดหน้า login
-                }else{
-                    JOptionPane.showMessageDialog(null, "Regis fail"); //เมื่อไม่มีการ update ข้อมูลจาก database(สมัครไม่สำเร็จ) จะทำการแจ้งเตือนว่าสมัครไม่สำเร็จ
-                }
-            } catch (SQLException ex) {
-                Logger.getLogger(Confirm.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }else{ //เมื่อส่ง CodeConfirm ไม่สำเร็จจะแจ้งเตือน
-            System.out.println("Send ConfirmCode Fail");
-        }
+        checkConfirm();
     }//GEN-LAST:event_btCodeConfirmActionPerformed
 
+        public void checkConfirm(){
+            Connection conn = null;     
+            PreparedStatement pstmt = null;
+            conn = MySqlConnect.ConnectDB();   //เชื่อมต่อไปยัง Database
+            if(tfCodeConfirm.getText().equals((String)Code)){  //ตรวจสอบ codeconfirm 
+                try {            
+                    pstmt = conn.prepareStatement("insert into member values(?,?)");  //กำหนด ข้อมูลที่จะเพิ่มใน database
+                    pstmt.setString(1, Username);  
+                    pstmt.setString(2,String.valueOf(password));
+                    int i = pstmt.executeUpdate();  //เมื่อ database มีการ update i จะ เท่ากับ 1
+                    File newFile = new File("C:\\Users\\ธนพล\\Desktop\\SakNoi\\building II\\LoginField\\StorefolderUser\\"+Username);
+                    newFile.mkdir();  //สร้าง folder ตามชื่อ Username เพื่อเก็บไฟล์ pdf ของแต่ละ user
+                    System.out.println("Create Folder for User "+Username+" Successful!!");
+                    if(i>0){  // เมื่อมีการ update แจ้งเตือน
+                        JOptionPane.showMessageDialog(null, "Regis successful");  
+                        System.out.println("Register Successful!");
+                        dispose(); //ปิดหน้าต่าง confirm 
+                        LoginForm login = new LoginForm(); 
+                        login.setVisible(true); //เปิดหน้า login
+                    }else{
+                        JOptionPane.showMessageDialog(null, "Regis fail"); //เมื่อไม่มีการ update ข้อมูลจาก database(สมัครไม่สำเร็จ) จะทำการแจ้งเตือนว่าสมัครไม่สำเร็จ
+                    }
+                } catch (SQLException ex) {
+                    Logger.getLogger(Confirm.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }else{ //เมื่อส่ง CodeConfirm ไม่สำเร็จจะแจ้งเตือน
+                System.out.println("Send ConfirmCode Fail");
+            }
+        }
     /**
      * @param args the command line arguments
      */
