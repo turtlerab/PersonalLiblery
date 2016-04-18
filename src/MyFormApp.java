@@ -224,31 +224,39 @@ FileUtils.copyFile(source, dest);
     }// </editor-fold>//GEN-END:initComponents
 
     private void RemovebuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RemovebuttonMouseClicked
-        confirmDelete();
-    }//GEN-LAST:event_RemovebuttonMouseClicked
-    public void confirmDelete(){
-        // TODO add your handling code here:JDialog.setDefaultLookAndFeelDecorated(true);
-        //ฟังก์ชั่นจะทำการลบ รายชื่อไฟล์ที่ต้องการ ลบ เมื่อกดปุ่มลบ
-        int index = jList2.getSelectedIndex(); //ตำแหน่งรายชื่อที่เลือก
-        int response = JOptionPane.showConfirmDialog(null, "Do you want to delete "+model.getElementAt(index)+" ?", "Confirm", //หน้าต่างแจ้งเตือนคอนเฟิร์มเพื่อลบ
-            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-        if (response == JOptionPane.YES_OPTION) {//กดตกลงจะทำตามเงื่อนไข
-
-            if (model.getSize() > 0)
+               int index = jList2.getSelectedIndex(); //ตำแหน่งรายชื่อที่เลือก
+        Book Element =model.getElementAt(index);
+        String name = Element.toString();
+       if(confirmDelete(PATH,name)==JOptionPane.YES_OPTION){//กดตกลงจะทำตามเงื่อนไข
+             if (model.getSize() > 0)
             System.out.println( PATH+model.getElementAt(index));//แสดงรายชื่อที่ลบ
 
             deleteDir(new File(PATH+model.getElementAt(index)));//ลบไฟล์ pdf ในโฟล์เดอร์
             deleteDir(new File(PATH+model.getElementAt(index).getIconName()+".png"));//ลบไฟล์รูปในโฟล์เดอร์
             model.removeElementAt(index);//ลบรายชื่อ ในหนน้าต่างLIST
-                
-        }
+       }   
+    }//GEN-LAST:event_RemovebuttonMouseClicked
+       public static int confirmDelete(String PATH,String Element){
+        // TODO add your handling code here:JDialog.setDefaultLookAndFeelDecorated(true);
+        //ฟังก์ชั่นจะทำการลบ รายชื่อไฟล์ที่ต้องการ ลบ เมื่อกดปุ่มลบ
+        
+        int response = JOptionPane.showConfirmDialog(null, "Do you want to delete "+Element+" ?", "Confirm", //หน้าต่างแจ้งเตือนคอนเฟิร์มเพื่อลบ
+            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return response;
     }
     private void AddbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AddbuttonMouseClicked
-        addFile();
+         String name = addFile(PATH);
+        int a=i+1;
+            String imagename = FilenameUtils.removeExtension(name);
+            model.addElement(new Book(name, ""+a , imagename,PATH)); //ใส่รายชื่อในlist
+            i=i+1;
+            jList2.setModel(model);
+            jList2.setCellRenderer(new BookRenderer());
     }//GEN-LAST:event_AddbuttonMouseClicked
-    public void addFile(){
+       public static String addFile(String PATH){
     // TODO add your handling code here:
         //ฟังก์ชั่น เพิ่มหนังสือเมื่อกดปุ่มเพิ่ม
+        String name =null;
         JFileChooser fileChooser = new JFileChooser(); //เปิดหน้าต่างเลือกไฟล์
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("PDF Documents", "pdf"));//แสดงเฉพาะpdf
@@ -257,11 +265,11 @@ FileUtils.copyFile(source, dest);
         if (returnValue == JFileChooser.APPROVE_OPTION) {//เมื่อเลือกไฟล์แล้วตกตกลง
             File selectedFile = fileChooser.getSelectedFile(); 
             try {
-                pdfToimage(selectedFile); //ทำการเซฟรูปหน้าปกของไฟล์ที่เลือก
+                pdfToimage(selectedFile,PATH); //ทำการเซฟรูปหน้าปกของไฟล์ที่เลือก
             } catch (IOException ex) {
                 Logger.getLogger(MyFormApp.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+            name = selectedFile.getName();
             System.out.println(selectedFile.getName()); //แสดงรายชื่อที่หนังสือที่เลือกเพิ่ม
             File source = new File(""+selectedFile);
             File dest = new File(PATH+ selectedFile.getName());
@@ -269,12 +277,7 @@ FileUtils.copyFile(source, dest);
             long start = System.nanoTime();
             //copy files using apache commons io
             start = System.nanoTime();
-            int a=i+1;
-            String imagename = FilenameUtils.removeExtension(selectedFile.getName());
-            model.addElement(new Book(selectedFile.getName(), ""+a , imagename,PATH)); //ใส่รายชื่อในlist
-            i=i+1;
-            jList2.setModel(model);
-            jList2.setCellRenderer(new BookRenderer());
+            
             try {
                 copyFileUsingApacheCommonsIO(source, dest); //ก็อปปี้ไฟล์ไปใส่ในโฟล์เดอร์เฉพาะ
             } catch (IOException ex) {
@@ -282,17 +285,48 @@ FileUtils.copyFile(source, dest);
             }
 
             System.out.println("Time taken by Apache Commons IO Copy = "+(System.nanoTime()-start));
+            
         }
-    
+     return name;
     }
     private void OpenbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_OpenbuttonMouseClicked
         // TODO add your handling code here:
-        int index = jList2.getSelectedIndex();
+        int index = jList2.getSelectedIndex();//ตำแหน่งที่เลือก
         System.out.println( model.getElementAt(index)); //แสดงรายชื่อไฟล์ที่เปิด
-        openMenuItemActionPerformed(); //เรียกใช้ฟังก์ชั่นเพื่อเปิด หนังสือ ในแทปที่ 2
-     
+        String name = PATH+model.getElementAt(index);
+        Viewer viewer;
+        try {
+            viewer = openMenuItemActionPerformed(name); //เรียกใช้ฟังก์ชั่นเพื่อเปิด หนังสือ ในแทปที่ 2
+             jPanel5.removeAll(); //ลบข้อมูลเก่าที่แสดงก่อนหน้า    
+            jPanel5.add(viewer);//ใส่ข้อมูลที่จะแสดง
+            viewer.activate();
+        } catch (Exception ex) {
+            Logger.getLogger(MyFormApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
+        jPanel5.validate();
     }//GEN-LAST:event_OpenbuttonMouseClicked
+ public static Viewer openMenuItemActionPerformed(String name) throws Exception { //ฟังก์ชั่นเปิด หนังสือ
+         Viewer viewer = new Viewer();
+            try
+            {
+                FileInputStream inputStream = new FileInputStream(name); //เปิดไฟล์ที่เลือก
+                
+                viewer.setDocumentInputStream( inputStream );//set ไฟล์ที่จะเปิด
 
+               
+               
+            }
+            catch (FileNotFoundException ex)
+            {
+                JOptionPane.showMessageDialog(null,"Cannot find the file!");
+            }
+            catch(Exception e)
+            {
+                JOptionPane.showMessageDialog(null,"Cannot open the file!");
+            }
+         return viewer;
+    }
     private void jList2AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_jList2AncestorAdded
         // TODO add your handling code here:
         // ฟังก์ชั่น LIST หนังสือ
@@ -311,7 +345,7 @@ FileUtils.copyFile(source, dest);
     }//GEN-LAST:event_jList2AncestorAdded
 
     private void btLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btLogoutActionPerformed
-        dispose();
+          dispose();
         LoginForm login = new LoginForm();
         login.setVisible(true);
     }//GEN-LAST:event_btLogoutActionPerformed
@@ -322,32 +356,7 @@ FileUtils.copyFile(source, dest);
 
 
     
-    void openMenuItemActionPerformed() { //ฟังก์ชั่นเปิด หนังสือ
-            int index = jList2.getSelectedIndex(); //ตำแหน่งที่เลือก
-            try
-            {
-                FileInputStream inputStream = new FileInputStream(PATH+model.getElementAt(index)); //เปิดไฟล์ที่เลือก
-                Viewer viewer = new Viewer();
-                viewer.setDocumentInputStream( inputStream );//set ไฟล์ที่จะเปิด
-
-                jPanel5.removeAll(); //ลบข้อมูลเก่าที่แสดงก่อนหน้า
-               
-               jPanel5.add(viewer);//ใส่ข้อมูลที่จะแสดง
-                viewer.activate();
-                 
-                jPanel5.validate();
-                
-            }
-            catch (FileNotFoundException ex)
-            {
-                JOptionPane.showMessageDialog(this,"Cannot find the file!");
-            }
-            catch(Exception e)
-            {
-                JOptionPane.showMessageDialog(this,"Cannot open the file!");
-            }
-        
-    }
+    
 
     public static boolean deleteDir(File dir) { //ฟังก์ชั่นลบไฟล์
       if (dir.isDirectory()) {
@@ -363,7 +372,7 @@ FileUtils.copyFile(source, dest);
       return dir.delete();
       
   }
-    void pdfToimage(File filename) throws FileNotFoundException, IOException { //แปลงpdfเป็นรูปภาพ เฉพาะหน้าปก
+     public  static void pdfToimage(File filename,String PATH) throws FileNotFoundException, IOException { //แปลงpdfเป็นรูปภาพ เฉพาะหน้าปก
         
         // TODO Auto-generated method stub
         File pdfFile = new File(filename.toString()); //เปิดไฟล์ pdf
